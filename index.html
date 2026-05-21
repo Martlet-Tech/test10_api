@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCMTEST10 Lua API Reference</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --fg: #1e1e2e;
+    --accent: #1a73e8;
+    --border: #d0d7de;
+    --code-bg: #eef1f6;
+    --warn-bg: #fff8e1;
+    --note-bg: #e3f2fd;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 15px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); padding: 20px; }
+  .container { max-width: 1000px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 40px 48px; }
+  h1 { font-size: 28px; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 6px; }
+  .subtitle { color: #555; margin-bottom: 32px; font-size: 14px; }
+  h2 { font-size: 20px; margin: 32px 0 12px; padding: 8px 12px; background: #e8f0fe; border-radius: 6px; border-left: 4px solid var(--accent); }
+  h3 { font-size: 16px; margin: 20px 0 8px; color: var(--accent); }
+  .func { margin: 14px 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+  .func:hover { border-color: var(--accent); }
+  .sig { font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace; font-size: 14px; background: var(--code-bg); padding: 8px 12px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .sig b { color: var(--accent); }
+  .params { margin: 8px 0 0 16px; font-size: 14px; }
+  .params td { padding: 2px 12px 2px 0; vertical-align: top; }
+  .params td:first-child { font-family: monospace; white-space: nowrap; color: #d63384; }
+  .returns { margin: 8px 0 0 16px; font-size: 14px; color: #2e7d32; }
+  .example { margin: 8px 0 0 16px; font-size: 13px; }
+  .example pre { background: #1e1e2e; color: #cdd6f4; padding: 10px 14px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  .example .comment { color: #6c7086; }
+  .example .keyword { color: #cba6f7; }
+  .example .string { color: #a6e3a1; }
+  .example .number { color: #fab387; }
+  .example .builtin { color: #89b4fa; }
+  .note { background: var(--note-bg); padding: 10px 14px; border-radius: 6px; margin: 8px 0 0 16px; font-size: 13px; border-left: 3px solid var(--accent); }
+  .warn { background: var(--warn-bg); padding: 10px 14px; border-radius: 6px; margin: 8px 0 0 16px; font-size: 13px; border-left: 3px solid #f9a825; }
+  .todo { background: #fce4ec; padding: 10px 14px; border-radius: 6px; margin: 8px 0 0 16px; font-size: 13px; border-left: 3px solid #e53935; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-left: 8px; font-weight: 600; vertical-align: middle; }
+  .tag-stable { background: #e8f5e9; color: #2e7d32; }
+  .tag-todo { background: #fce4ec; color: #c62828; }
+  .tag-deprecated { background: #fff3e0; color: #e65100; }
+  summary { cursor: pointer; font-weight: 600; color: var(--accent); font-size: 14px; margin: 4px 0; }
+  nav { position: sticky; top: 0; background: #fff; border-bottom: 1px solid var(--border); padding: 10px 0; margin-bottom: 24px; z-index: 10; font-size: 13px; }
+  nav a { color: var(--accent); text-decoration: none; margin-right: 16px; white-space: nowrap; }
+  nav a:hover { text-decoration: underline; }
+  .pin-table { border-collapse: collapse; margin: 8px 0 0 16px; font-size: 14px; }
+  .pin-table th, .pin-table td { border: 1px solid var(--border); padding: 4px 12px; text-align: left; }
+  .pin-table th { background: var(--code-bg); font-weight: 600; }
+  @media (max-width: 720px) { .container { padding: 16px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>LCMTEST10 Lua API Reference</h1>
+<p class="subtitle">Firmware for STM32F407VET6 — LCD Module Tester with Lua Scripting<br>
+Target: RA8876 + SSD2828 (MIPI DSI/DPI) | <code>version(major.minor.fix)</code></p>
+
+<nav>
+<a href="#system">System</a>
+<a href="#gpio">GPIO</a>
+<a href="#adc">ADC</a>
+<a href="#pwm">PWM</a>
+<a href="#display">Display</a>
+<a href="#mipi">MIPI</a>
+<a href="#power">Power</a>
+<a href="#image">Image</a>
+<a href="#touch">Touch</a>
+<a href="#uart">UART</a>
+<a href="#log">Log</a>
+<a href="#pinmap">Pin Map</a>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="system">System</h2>
+
+<div class="func">
+  <div class="sig"><b>version</b>(ver_str)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Compare firmware version against a version string. Prints to log if firmware is newer.</p>
+  <table class="params">
+    <tr><td>ver_str</td><td>string — version in <code>"major.minor.fix"</code> format</td></tr>
+  </table>
+  <div class="returns">Returns: -1 (fw older), 0 (equal), 1 (fw newer)</div>
+  <div class="example"><pre><span class="keyword">local</span> r = <span class="builtin">version</span>(<span class="string">"1.2.3"</span>)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>delay</b>(ms)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Blocking delay in milliseconds. Alias for <code>delay_ms</code>.</p>
+  <table class="params"><tr><td>ms</td><td>integer — milliseconds to wait</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>delay_ms</b>(ms)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Blocking delay in milliseconds using <code>HAL_Delay</code>.</p>
+  <table class="params"><tr><td>ms</td><td>integer — milliseconds to wait</td></tr></table>
+  <div class="example"><pre><span class="builtin">delay_ms</span>(<span class="number">500</span>)  <span class="comment">-- wait 500ms</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>delay_us</b>(us)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Blocking delay in microseconds using DWT cycle counter.</p>
+  <table class="params"><tr><td>us</td><td>integer — microseconds to wait</td></tr></table>
+  <div class="example"><pre><span class="builtin">delay_us</span>(<span class="number">10</span>)  <span class="comment">-- wait 10µs</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>led_on</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Turn the module backlight LED on (ULED2, PC4, active low).</p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>led_off</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Turn the module backlight LED off (ULED2, PC4, active low).</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="gpio">GPIO</h2>
+
+<div class="func">
+  <div class="sig"><b>io2</b>(state)</div>
+  <div class="sig"><b>io3</b>(state)</div>
+  <div class="sig"><b>io4</b>(state)</div>
+  <div class="sig"><b>io5</b>(state)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Quick-write a specific 45-pin IO. Sets the GPIO output high or low immediately.</p>
+  <table class="params"><tr><td>state</td><td>integer — 0 = low, 1 = high</td></tr></table>
+  <div class="note">These functions <strong>do not</strong> configure the pin mode — use <code>ioInitial</code> first if the pin is not already at the desired mode.</div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>ioInitial</b>(ioNum, mode, pull)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Configure a 45-pin IO's direction and pull resistor.</p>
+  <table class="params">
+    <tr><td>ioNum</td><td>integer — pin number on the 45-pin connector (2,3,4,5,14,15,16)</td></tr>
+    <tr><td>mode</td><td>string — <code>"INPUT"</code>, <code>"OUTPUT_PP"</code>, or <code>"OUTPUT_OD"</code></td></tr>
+    <tr><td>pull</td><td>string — <code>"NOPULL"</code>, <code>"PULLUP"</code>, or <code>"PULLDOWN"</code></td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">ioInitial</span>(<span class="number">5</span>, <span class="string">"OUTPUT_PP"</span>, <span class="string">"NOPULL"</span>)
+<span class="builtin">io5</span>(<span class="number">1</span>)  <span class="comment">-- drive high</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>ioDeInitial</b>(ioNum)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">De-initialize a GPIO pin. <span class="tag tag-todo">TODO</span></p>
+  <table class="params"><tr><td>ioNum</td><td>integer — pin number</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>ioWrite</b>(ioNum, state)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Write a digital state to any 45-pin IO by number.</p>
+  <table class="params">
+    <tr><td>ioNum</td><td>integer — pin number (2..16 where defined)</td></tr>
+    <tr><td>state</td><td>integer — 0 = low, 1 = high</td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">ioWrite</span>(<span class="number">14</span>, <span class="number">0</span>)  <span class="comment">-- drive pin 14 low</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>ioRead</b>(ioNum)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read a digital state from any 45-pin IO by number.</p>
+  <table class="params"><tr><td>ioNum</td><td>integer — pin number</td></tr></table>
+  <div class="returns">Returns: 0 (low) or 1 (high)</div>
+  <div class="example"><pre><span class="keyword">local</span> val = <span class="builtin">ioRead</span>(<span class="number">3</span>)
+<span class="builtin">print</span>(<span class="string">"Pin 3 state: "</span> .. val)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>readKey</b>(keyNum)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read a hardware button/switch on the board.</p>
+  <table class="params">
+    <tr><td>keyNum</td><td>integer — key number (0 or 1)</td></tr>
+  </table>
+  <div class="returns">Returns: 0 (pressed/low), 1 (released/high), -1 (invalid key)</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="adc">ADC</h2>
+
+<div class="note">ADC is available on <strong>IO2 (PA6/ADC1_IN6)</strong>, <strong>IO3 (PA4/ADC1_IN4)</strong>, and <strong>IO4 (PA7/ADC1_IN7)</strong>. 12-bit resolution, VREF+ = 3.3V. Single conversion mode: Start → Poll → Read → Stop per call.</div>
+
+<div class="func">
+  <div class="sig"><b>adc_init</b>(pin)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Initialize a 45-pin IO as an ADC analog input. Configures the GPIO to analog mode, sets up ADC1 with 480-cycle sampling time, single conversion, software trigger.</p>
+  <table class="params"><tr><td>pin</td><td>integer — pin number (2, 3, or 4)</td></tr></table>
+  <div class="returns">Returns: 0 (ok), 1 (error — invalid pin or HAL failure)</div>
+  <div class="warn">Only one ADC channel can be active at a time. Calling <code>adc_init</code> with a different pin re-initializes the ADC for the new pin.</div>
+  <div class="example"><pre><span class="builtin">adc_init</span>(<span class="number">3</span>)  <span class="comment">-- init IO3 (PA4) as ADC input</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>adc_read</b>(pin)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read the raw 12-bit ADC value (0–4095).</p>
+  <table class="params"><tr><td>pin</td><td>integer — pin number (2, 3, or 4)</td></tr></table>
+  <div class="returns">Returns: integer 0–4095, or 0xFFFFFFFF on error</div>
+  <div class="example"><pre><span class="builtin">adc_init</span>(<span class="number">2</span>)
+<span class="keyword">local</span> raw = <span class="builtin">adc_read</span>(<span class="number">2</span>)
+<span class="builtin">print</span>(<span class="string">"RAW: "</span> .. raw)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>adc_read_voltage</b>(pin)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read the ADC value converted to millivolts. Formula: <code>raw * 3300 / 4095</code>.</p>
+  <table class="params"><tr><td>pin</td><td>integer — pin number (2, 3, or 4)</td></tr></table>
+  <div class="returns">Returns: integer mV, or 0xFFFFFFFF on error</div>
+  <div class="example"><pre><span class="builtin">adc_init</span>(<span class="number">4</span>)
+<span class="keyword">local</span> mv = <span class="builtin">adc_read_voltage</span>(<span class="number">4</span>)
+<span class="builtin">print</span>(<span class="string">"Voltage: "</span> .. mv .. <span class="string">" mV"</span>)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>adc_deinit</b>(pin)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">De-initialize the ADC peripheral and disable its clock.</p>
+  <table class="params"><tr><td>pin</td><td>integer — pin number (2, 3, or 4)</td></tr></table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="pwm">PWM</h2>
+
+<div class="note">PWM is available on <strong>IO14 (PB7 / TIM4_CH2)</strong> and <strong>IO15 (PB6 / TIM4_CH1)</strong>. Timer base: APB1 42 MHz, prescaler calculated from target frequency.</div>
+
+<div class="func">
+  <div class="sig"><b>t10_pwm_on</b>(pin, freq, duty)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Start PWM output on a pin.</p>
+  <table class="params">
+    <tr><td>pin</td><td>integer — pin number (14 or 15)</td></tr>
+    <tr><td>freq</td><td>integer — target frequency in Hz</td></tr>
+    <tr><td>duty</td><td>integer — duty cycle percentage (0–100)</td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">t10_pwm_on</span>(<span class="number">14</span>, <span class="number">1000</span>, <span class="number">50</span>)  <span class="comment">-- 1 kHz, 50% duty on IO14</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_pwm_off</b>(pin)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Stop PWM output on a pin and de-initialize the timer.</p>
+  <table class="params"><tr><td>pin</td><td>integer — pin number (14 or 15)</td></tr></table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="display">Display Drawing</h2>
+
+<div class="func">
+  <div class="sig"><b>fillColor</b>(r, g, b)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Fill the entire screen with an RGB color.</p>
+  <table class="params">
+    <tr><td>r</td><td>integer — red component (0–255)</td></tr>
+    <tr><td>g</td><td>integer — green component (0–255)</td></tr>
+    <tr><td>b</td><td>integer — blue component (0–255)</td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">fillColor</span>(<span class="number">255</span>, <span class="number">0</span>, <span class="number">0</span>)  <span class="comment">-- red screen</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>drawFile</b>(filename)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Decode and display an image file from the SD card (FATFS).</p>
+  <table class="params"><tr><td>filename</td><td>string — path to the image file on SD</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>set_lvds_color_mode</b>(mode)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set LVDS color mode for the SSD2828 serializer.</p>
+  <table class="params"><tr><td>mode</td><td>integer — color mode value</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_print</b>(x, y, size, fc, bc, str)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Print text on the display using RA8876 internal font (fixed 24px height, 4x magnification).</p>
+  <table class="params">
+    <tr><td>x</td><td>integer — X start position (pixels)</td></tr>
+    <tr><td>y</td><td>integer — Y start position (pixels)</td></tr>
+    <tr><td>size</td><td>integer — ignored (reserved, uses fixed 24px)</td></tr>
+    <tr><td>fc</td><td>integer — foreground color (24-bit RGB: 0xRRGGBB)</td></tr>
+    <tr><td>bc</td><td>integer — background color (24-bit RGB: 0xRRGGBB)</td></tr>
+    <tr><td>str</td><td>string — text to display</td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">t10_print</span>(<span class="number">100</span>, <span class="number">200</span>, <span class="number">0</span>, <span class="number">0xffffff</span>, <span class="number">0x000000</span>, <span class="string">"Hello"</span>)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_print_ex</b>(x, y, size, fc, bc, str, xxn, yxn, chromekey, align)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Print text with extended font control (width/height magnification, chroma key, alignment).</p>
+  <table class="params">
+    <tr><td>x</td><td>integer — X start position</td></tr>
+    <tr><td>y</td><td>integer — Y start position</td></tr>
+    <tr><td>size</td><td>integer — base font height (16, 24, or 32)</td></tr>
+    <tr><td>fc</td><td>integer — foreground color (24-bit RGB)</td></tr>
+    <tr><td>bc</td><td>integer — background color (24-bit RGB)</td></tr>
+    <tr><td>str</td><td>string — text to display</td></tr>
+    <tr><td>xxn</td><td>integer — horizontal magnification (1–4)</td></tr>
+    <tr><td>yxn</td><td>integer — vertical magnification (1–4)</td></tr>
+    <tr><td>chromekey</td><td>integer — chroma key enable (0 = off, 1 = on)</td></tr>
+    <tr><td>align</td><td>integer — alignment (0 = left, etc.)</td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">t10_print_ex</span>(<span class="number">50</span>, <span class="number">100</span>, <span class="number">32</span>, <span class="number">0x00ff00</span>, <span class="number">0</span>, <span class="string">"Big Text"</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">0</span>)</pre></div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="mipi">MIPI Interface Configuration</h2>
+
+<div class="note">These functions configure the display interface mode: DBI (parallel command mode), DPI (RGB video mode), or DSI (serial MIPI via SSD2828). Call one of these before any display drawing functions.</div>
+
+<div class="func">
+  <div class="sig"><b>t10_DBI_A</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set MIPI-DBI Type A mode. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_DBI_B</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set MIPI-DBI Type B mode. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_DBI_C</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set MIPI-DBI Type C mode. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_DPI</b>(h_size, hsw, hbp, hfp, v_size, vsw, vbp, vfp, hsp, vsp, dep, clkEdge, fps)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Configure MIPI-DPI (RGB parallel) mode via RA8876. Programs the display timing and initializes the RA8876.</p>
+  <table class="params">
+    <tr><td>h_size</td><td>integer — horizontal active pixels</td></tr>
+    <tr><td>hsw</td><td>integer — HSYNC pulse width</td></tr>
+    <tr><td>hbp</td><td>integer — horizontal back porch</td></tr>
+    <tr><td>hfp</td><td>integer — horizontal front porch</td></tr>
+    <tr><td>v_size</td><td>integer — vertical active lines</td></tr>
+    <tr><td>vsw</td><td>integer — VSYNC pulse width</td></tr>
+    <tr><td>vbp</td><td>integer — vertical back porch</td></tr>
+    <tr><td>vfp</td><td>integer — vertical front porch</td></tr>
+    <tr><td>hsp</td><td>integer — HSYNC polarity (0/1)</td></tr>
+    <tr><td>vsp</td><td>integer — VSYNC polarity (0/1)</td></tr>
+    <tr><td>dep</td><td>integer — DE polarity (0/1)</td></tr>
+    <tr><td>clkEdge</td><td>integer — pixel clock edge (0 = rising, 1 = falling)</td></tr>
+    <tr><td>fps</td><td>integer — target frame rate (Hz)</td></tr>
+  </table>
+  <div class="example"><pre><span class="comment">-- Example: 1024×600 @ 60 Hz</span>
+<span class="builtin">t10_DPI</span>(<span class="number">1024</span>, <span class="number">40</span>, <span class="number">160</span>, <span class="number">160</span>, <span class="number">600</span>, <span class="number">10</span>, <span class="number">23</span>, <span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">60</span>)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_DSI</b>(h_size, hsw, hbp, hfp, v_size, vsw, vbp, vfp, hsp, vsp, dep, clkEdge, fps, lanes, mode)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Configure MIPI-DSI (serial) mode via RA8876 → SSD2828 serializer. All timing parameters are the same as DPI, plus lane count and video mode selection.</p>
+  <table class="params">
+    <tr><td colspan="2">Parameters 1–13 are identical to <code>t10_DPI</code></td></tr>
+    <tr><td>lanes</td><td>integer — number of MIPI data lanes (1–4)</td></tr>
+    <tr><td>mode</td><td>integer — MIPI video mode type</td></tr>
+  </table>
+  <div class="example"><pre><span class="comment">-- Example: 1024×600 @ 60 Hz, 4-lane DSI</span>
+<span class="builtin">t10_DSI</span>(<span class="number">1024</span>, <span class="number">40</span>, <span class="number">160</span>, <span class="number">160</span>, <span class="number">600</span>, <span class="number">10</span>, <span class="number">23</span>, <span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">60</span>, <span class="number">4</span>, <span class="number">0</span>)</pre></div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="power">Power Control</h2>
+
+<div class="func">
+  <div class="sig"><b>t10_powerOn</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Turn on all module power rails: 5.0V, 3.3V, and 1.8V.</p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_powerOff</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Turn off all module power rails.</p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_autoPower</b>(mode)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set auto power-off mode.</p>
+  <table class="params"><tr><td>mode</td><td>integer — 0 = disable, 1 = enable</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vdd_state</b>(state)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Control the 5.0V (VDD) power rail.</p>
+  <table class="params"><tr><td>state</td><td>integer — 0 = off, 1 = on (CTRL_5V0, PE0)</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vddio_state</b>(state)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Control the 3.3V (VDDIO) power rail.</p>
+  <table class="params"><tr><td>state</td><td>integer — 0 = off, 1 = on (CTRL_3V3, PE1)</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vdd1v8_state</b>(state)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Control the 1.8V power rail.</p>
+  <table class="params"><tr><td>state</td><td>integer — 0 = off, 1 = on (CTRL_1V8, PE2)</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vdd_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VDD voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vddio_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VDDIO voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_avdd_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read AVDD voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_avdd_state</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read AVDD power state. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vgh_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VGH (gate positive) voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vgh_state</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VGH power state. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vgl_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VGL (gate negative) voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vgl_state</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VGL power state. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vcom_value</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VCOM voltage. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_vcom_state</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read VCOM power state. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="image">Image Display</h2>
+
+<div class="func">
+  <div class="sig"><b>t10_setInterval</b>(ms)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set the image auto-advance interval for the tester's slideshow mode.</p>
+  <table class="params"><tr><td>ms</td><td>integer — interval in milliseconds (must be ≥ 0)</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_delayMs</b>(ms)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Blocking delay in milliseconds. Identical to <code>delay_ms</code>.</p>
+  <table class="params"><tr><td>ms</td><td>integer — ≥ 0</td></tr></table>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_getImageFileNames</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">List image files on the SD card. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_displayImageFile</b>(filename)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Display an image file from SD card. Alias for <code>drawFile</code>.</p>
+  <table class="params"><tr><td>filename</td><td>string — path to image on SD</td></tr></table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="touch">Touch</h2>
+
+<div class="func">
+  <div class="sig"><b>t10_CTP_Initial</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Initialize the capacitive touch panel (CTP) controller. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_CTP_Scan</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Scan the capacitive touch panel for touches. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_CTP_Ckeck</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Check capacitive touch panel status. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_RTP_Initial</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Initialize the resistive touch panel (RTP) controller. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_RTP_Scan</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Scan the resistive touch panel for touches. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>t10_RTP_Ckeck</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Check resistive touch panel status. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="uart">UART</h2>
+
+<div class="note">UART1 (PA9 TX, PA10 RX, 115200 8N1) is used for Lua <code>print()</code> output. These functions provide additional UART control.</div>
+
+<div class="func">
+  <div class="sig"><b>uart_init</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Initialize UART. Currently a no-op (UART is initialized at boot).</p>
+</div>
+
+<div class="func">
+  <div class="sig"><b>uart_write</b>(str)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Transmit a string over UART1.</p>
+  <table class="params"><tr><td>str</td><td>string — data to transmit</td></tr></table>
+  <div class="example"><pre><span class="builtin">uart_write</span>(<span class="string">"Hello from Lua!\r\n"</span>)</pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>uart_read</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Read data from UART. <span class="tag tag-todo">TODO</span></p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="log">Log Level Control</h2>
+
+<div class="func">
+  <div class="sig"><b>set_log_level</b>(level)</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Set the log output level. Only messages at or above the selected level are printed.</p>
+  <table class="params">
+    <tr><td>level</td><td>integer —<br>
+      0 = LUA (only Lua print)<br>
+      1 = ERR<br>
+      2 = WARNING<br>
+      3 = INFO<br>
+      4 = DEBUG (most verbose)
+    </td></tr>
+  </table>
+  <div class="example"><pre><span class="builtin">set_log_level</span>(<span class="number">4</span>)  <span class="comment">-- enable debug messages</span></pre></div>
+</div>
+
+<div class="func">
+  <div class="sig"><b>get_log_level</b>()</div>
+  <p style="margin:6px 0 0 16px;font-size:14px;">Print the current log level and show which level is active (marked with <code>*</code>).</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="pinmap">45-Pin Connector Pin Map</h2>
+
+<p style="font-size:14px;">The 45-pin connector provides the following GPIO and special-function pins on the STM32F407VET6:</p>
+
+<table class="pin-table">
+<tr><th>Pin #</th><th>Label</th><th>STM32 Pin</th><th>Capabilities</th></tr>
+<tr><td>2</td><td>UIO_2</td><td>PA6</td><td>GPIO, ADC1_IN6, TIM3_CH1</td></tr>
+<tr><td>3</td><td>UIO_3</td><td>PA4</td><td>GPIO, ADC1_IN4, SPI1_NSS</td></tr>
+<tr><td>4</td><td>UIO_4</td><td>PA7</td><td>GPIO, ADC1_IN7, TIM3_CH2, SPI1_MOSI</td></tr>
+<tr><td>5</td><td>UIO_5</td><td>PC15</td><td>GPIO</td></tr>
+<tr><td>6</td><td>UIO_6</td><td>PE6</td><td>GPIO</td></tr>
+<tr><td>7</td><td>UIO_7</td><td>PE5</td><td>GPIO</td></tr>
+<tr><td>8</td><td>UIO_8</td><td>PD6</td><td>GPIO</td></tr>
+<tr><td>9</td><td>UIO_9</td><td>PD3</td><td>GPIO</td></tr>
+<tr><td>14</td><td>UIO_14</td><td>PB7</td><td>GPIO, TIM4_CH2 (PWM)</td></tr>
+<tr><td>15</td><td>UIO_15</td><td>PB6</td><td>GPIO, TIM4_CH1 (PWM)</td></tr>
+<tr><td>16</td><td>UIO_16</td><td>PC7</td><td>GPIO</td></tr>
+</table>
+
+<div class="note">Pins 1, 10–13 are not connected to GPIO (GND, VCC, or unused). Only pins 2, 3, 4 have ADC capability. Only pins 14, 15 have PWM capability.</div>
+
+<p style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:#888;">LCMTEST10 — Firmware version tracking via <code>version()</code>. Generated from source. Functions marked <span class="tag tag-todo">TODO</span> are declared but not yet implemented.</p>
+
+</div>
+</body>
+</html>
